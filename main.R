@@ -602,3 +602,153 @@ resultado[resultado == FALSE]  <- 'Rejeitado'
 dadosFinais <- cbind(comp1, igual, qj, resultado, area=comp2$area)
 
 head(dadosFinais)
+# Cross validation
+SVM.comp.cruz <- validacaoCruzada(n = 10, tipo = 'SVM', dados = dadosClassificadores, lambda = 0.8, gamma = 0.4, cost = 1.5)
+
+SVM.comp.cruz$result$correcTot
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%
+#DATASET 2
+
+# Tuning
+rGamma <- c(0.4, 0.6, 0.8, 1, 1.2, 1.4)
+rCost <- c(0.5, 1, 1.5, 2, 2.5, 3)
+resTune.sub.v1 <- matrix(ncol = length(rCost), nrow = length(rGamma))
+
+for(i in 1:length(rGamma))
+  for(j in 1:length(rCost))
+  {
+    print(paste0("i = ", i, " and j = ", j))
+    res <- SVM.tune.sub <- tune.svm(dadosClassificadoresSub[,-1], dadosClassificadoresSub[,1], gamma = rGamma[i], cost = rCost[j])
+
+    resTune.sub.v1[i,j] <- res$best.performance
+  }
+colnames(resTune.sub.v1) <- rCost
+rownames(resTune.sub.v1) <- rGamma
+min(resTune.sub.v1)
+
+
+# Cross validation
+SVM.sub.cruz <- validacaoCruzada(n = 10, tipo = 'SVM', dados = dadosClassificadoresSub, lambda = 0.8, gamma = 0.4, cost = 2.5)
+
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%
+# METHOD CALIBRATION
+# q_j estimation. Follow the estimaQ function in functions.R
+SVM.sub.qi <- estimaQ(classificador = SVM.sub.cruz$classificador, lambdas = c(0.6, 0.7, 0.8, 0.9, 0.95))
+
+
+
+# CALIBRATION ASSESSMENT
+# Follow the assessmentMetodo function in functions.R
+SVM.sub.assess <- assessmentMetodo(classificador = SVM.sub.cruz$classificador,  qis = SVM.sub.qi)
+
+
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Final data structures: output for paper
+
+#%%%%%%%%%%%%%%%%%%%%%%%%
+# Data.frame containing all parcels and data from calibration mehtod 
+comp1 <- SVM.sub.analise$resultClass
+comp1$parcela <- as.character(comp1$parcela)
+comp1 <- comp1[order(comp1$parcela, decreasing = TRUE),]
+
+comp2 <- listaTodasParcelas
+comp2$id <- as.character(comp2$id)
+comp2 <- comp2[order(comp2$id, decreasing = TRUE),]
+
+igual <- comp1$verdade == comp1$class1
+igual[igual == TRUE]  <- 'Igual'
+igual[igual == FALSE]  <- 'Diferente'
+
+qj <- c()
+for(i in 1:nrow(comp1)) qj[i] <- SVM.sub.analise$l0.8$qi[comp1$class1[i]]
+
+resultado <- comp1$prob1 >= qj
+resultado[resultado == TRUE]  <- 'Aceite'
+resultado[resultado == FALSE]  <- 'Rejeitado'
+
+dadosFinais <- cbind(comp1, igual, qj, resultado, area=comp2$area)
+
+head(dadosFinais)
+# Cross validation
+SVM.comp.cruz <- validacaoCruzada(n = 10, tipo = 'SVM', dados = dadosClassificadores, lambda = 0.8, gamma = 0.4, cost = 1.5)
+
+SVM.comp.cruz$result$correcTot
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%
+#DATASET 2
+
+# Tuning
+rGamma <- c(0.4, 0.6, 0.8, 1, 1.2, 1.4)
+rCost <- c(0.5, 1, 1.5, 2, 2.5, 3)
+resTune.sub.v1 <- matrix(ncol = length(rCost), nrow = length(rGamma))
+
+for(i in 1:length(rGamma))
+  for(j in 1:length(rCost))
+  {
+    print(paste0("i = ", i, " and j = ", j))
+    res <- SVM.tune.sub <- tune.svm(dadosClassificadoresSub[,-1], dadosClassificadoresSub[,1], gamma = rGamma[i], cost = rCost[j])
+
+    resTune.sub.v1[i,j] <- res$best.performance
+  }
+colnames(resTune.sub.v1) <- rCost
+rownames(resTune.sub.v1) <- rGamma
+min(resTune.sub.v1)
+
+
+# Cross validation
+SVM.sub.cruz <- validacaoCruzada(n = 10, tipo = 'SVM', dados = dadosClassificadoresSub, lambda = 0.8, gamma = 0.4, cost = 2.5)
+
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%
+# METHOD CALIBRATION
+# q_j estimation. Follow the estimaQ function in functions.R
+SVM.sub.qi <- estimaQ(classificador = SVM.sub.cruz$classificador, lambdas = c(0.6, 0.7, 0.8, 0.9, 0.95))
+
+
+
+# CALIBRATION ASSESSMENT
+# Follow the assessmentMetodo function in functions.R
+SVM.sub.assess <- assessmentMetodo(classificador = SVM.sub.cruz$classificador,  qis = SVM.sub.qi)
+
+
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Final data structures: output for paper
+
+#%%%%%%%%%%%%%%%%%%%%%%%%
+# Data.frame containing all parcels and data from calibration mehtod 
+comp1 <- SVM.sub.analise$resultClass
+comp1$parcela <- as.character(comp1$parcela)
+comp1 <- comp1[order(comp1$parcela, decreasing = TRUE),]
+
+comp2 <- listaTodasParcelas
+comp2$id <- as.character(comp2$id)
+comp2 <- comp2[order(comp2$id, decreasing = TRUE),]
+
+igual <- comp1$verdade == comp1$class1
+igual[igual == TRUE]  <- 'Igual'
+igual[igual == FALSE]  <- 'Diferente'
+
+qj <- c()
+for(i in 1:nrow(comp1)) qj[i] <- SVM.sub.analise$l0.8$qi[comp1$class1[i]]
+
+resultado <- comp1$prob1 >= qj
+resultado[resultado == TRUE]  <- 'Aceite'
+resultado[resultado == FALSE]  <- 'Rejeitado'
+
+dadosFinais <- cbind(comp1, igual, qj, resultado, area=comp2$area)
+
+head(dadosFinais)
